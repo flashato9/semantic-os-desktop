@@ -13,11 +13,15 @@ You **define the what**, your **computer figures out the how**.
 
 ---
 
-### ⚡ Development Roadmap
+## 📜 Development & Engineering Log
 
-> 🛠️ **Status:** Under Active Development
-> 
-> Check back soon for the initial release.
+A running timeline of milestones
+| Date | Focus Area | Key Achievements / Outcome | Status | Terms Learned |
+| :--- | :--- | :--- | :--- | :--- |
+| **May 28, 2026** | Initial Setup| Initialized repository, resolved initial Webpack bundle errors, and linked target GitHub origin. | 🟢 Done | |
+| **June 1, 2026** | Organizing React Components | Created `<ChatMessage />` and `<PromptSection />` modular React components with safe TypeScript interfaces. | 🟢 Done | |
+| **June 2, 2026** | Live Chat | Upgraded ChatView to enable user input and update chat. | 🟢 Done | |
+| **June 3, 2026** | LangGraph Integration | Integerate with LangGraph | TBD | |
 
 ---
 
@@ -29,5 +33,6 @@ This project was bootstrapped and built upon the incredible foundation of
 * **[Electron React Boilerplate (ERB)](https://electron-react-boilerplate.js.org/)** ecosystem. 
 * **[LangUI](https://www.langui.dev/)** - For providing the tailwind-crafted layout components specifically designed for AI and LLM applications. 
 * **[Tailwind CSS (v4)](https://tailwindcss.com/)** - Utilizing their modern, engine-driven utility framework for layout aesthetics.
+* **[SVG Repo](https://www.svgrepo.com/)** - Utilizing their sleek SVGs for icons
 
 I appreciate their commitment to open-source software, which dramatically cut down my infrastructure setup time, allowing me to focus directly on building application features!

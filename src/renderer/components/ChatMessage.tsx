@@ -1,6 +1,8 @@
 import { useState, FormEvent, ChangeEvent, JSX } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
+import humanAvatar from '../../../assets/chat/human.svg';
+import aiAvatar from '../../../assets/chat/nn.svg';
 import './ChatMessage.css';
 
 interface ChatMessageProps {
@@ -10,10 +12,10 @@ interface ChatMessageProps {
 function CNet({ sender, text }: ChatMessageProps) {
 
   let result: JSX.Element = (
-    <div className="flex flex-row px-4 py-8 sm:px-6">
+    <div className="flex flex-row px-4 py-8 sm:px-6 border-b border-slate-400/20 dark:border-slate-700/50">
       <img
         className="mr-2 flex h-8 w-8 rounded-full sm:mr-4"
-        src="https://dummyimage.com/256x256/363536/ffffff&text=U"
+        src={humanAvatar}
         alt="User Avatar"
       />
 
@@ -22,12 +24,12 @@ function CNet({ sender, text }: ChatMessageProps) {
       </div>
     </div>
   );
-  if (sender == "user"){
+  if (sender == "system"){
     result = (
-      <div className="flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6">
+      <div className="flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6 border-b border-slate-400/20 dark:border-slate-700/50">
       <img
         className="mr-2 flex h-8 w-8 rounded-full sm:mr-4"
-        src="https://dummyimage.com/256x256/354ea1/ffffff&text=G"
+        src={aiAvatar}
       />
     
       <div
