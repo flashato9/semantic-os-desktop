@@ -14,6 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import {MessageData} from "../main_renderer/interfaces"
 
 class AppUpdater {
   constructor() { //this is how you create a constructor in TypeScript
@@ -27,11 +28,19 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+ipcMain.on('incoming-chat-messages', async (event, arg) => {
+
+  const message: MessageData = arg[0];
+  console.log(`A message was received from render process. The message contains - ${JSON.stringify(message)}`)
+  console.log("Sending the message to the agent for processing...")
+  // TODO send message to langgraph
+  console.log("The message has been sent to the agent.")
+  event.reply('received-chat-messages', `The main process has recieved and processed messageid - ${message.id}.`);
 });
+
+
+ipcMain.emit
+
 //Here we are defining an interface on the ipcMain. This means the front end can call this method ipc-example (i.e., via the preloader), and it will run the anonymous function here.
 //when this anon funciton urns, it will reply to the enet with "IPC test: pong" and log the user's event to the terminal. 
 // Its interesting because sometimes the front end can call ipc-example(helloworld) and they will always get "IPC test: pong" as the output and the real input will be logged in the console

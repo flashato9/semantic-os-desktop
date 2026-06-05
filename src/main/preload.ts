@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example'; // setting the type Channels to "ipc-example"
+export type Channels = 'incoming-chat-messages'| "received-chat-messages"; // setting the type Channels to "ipc-example"
 //creating a wrapper for ipcRenderer
 const electronHandler = {
   ipcRenderer: { //here ipcRenderer is a string.

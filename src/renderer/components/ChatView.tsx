@@ -4,34 +4,44 @@ import icon from '../../assets/icon.svg';
 import './ChatView.css';
 import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
+import { MessageData } from '../../main_renderer/interfaces';
+import { v4 as uuidv4 } from 'uuid'
 
 const SAMPLE_MESSAGES = [
   {
     sender: 'user' as const,
-    text: 'Hello! I need a simple array structure for my messaging view.'
+    text: 'Hello! I need a simple array structure for my messaging view.',
+    id: "1"
   },
   {
     sender: 'system' as const,
-    text: 'Local AI agent connected. Ready to process text inputs.'
+    text: 'Local AI agent connected. Ready to process text inputs.',
+    id: "2"
   },
   {
     sender: 'user' as const,
-    text: 'Perfect. Let\'s keep it down to just the sender tag and the string text contents.'
+    text: 'Perfect. Let\'s keep it down to just the sender tag and the string text contents.',
+    id: "3"
   },
   {
     sender: 'system' as const,
-    text: 'Data packet layout updated. Non-essential tracking values dropped.'
+    text: 'Data packet layout updated. Non-essential tracking values dropped.',
+    id: "4"
   },
     {
     sender: 'user' as const,
-    text: 'Perfect. Let\'s keep it down to just the sender tag and the string text contents.'
+    text: 'Perfect. Let\'s keep it down to just the sender tag and the string text contents.',
+    id: "5"
   },
 ];
 
-interface MessageData {
-  sender: 'user' | 'system';
-  text: string;
+function sendMessageToGraph(message:MessageData){
+  window.electron?.ipcRenderer.sendMessage('incoming-chat-messages', [message]);
 }
+
+window.electron?.ipcRenderer.on("received-chat-messages",(result) => {
+  console.log('Response from Main -->', result);
+});
 
 function CNet() {
   const [messages, setMessages] = useState<MessageData[]>([
@@ -53,11 +63,14 @@ function CNet() {
 
   // 2. A central function to append new messages to our list
   const appendMessage = (text: string) => {
+    const uuid:string = uuidv4();
     const newMessage: MessageData = {
+      id: uuid,
       sender: 'user',
       text: text
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
+    sendMessageToGraph(newMessage);
   };
   return (<div className="flex h-[97vh] w-full flex-col">
   {/* Prompt Messages */}
