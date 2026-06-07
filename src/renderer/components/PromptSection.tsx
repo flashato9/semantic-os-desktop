@@ -2,9 +2,10 @@ import { useState, FormEvent, ChangeEvent, JSX, KeyboardEvent, useEffect, useRef
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
 import './PromptSection.css';
+import { MessageData } from '../../main_renderer/classes';
 
 interface PromptSectionProps {
-  onSendMessage: (text: string) => void;
+  onSendMessage: (newMessage: MessageData) => void;
 }
 
 const MAX_SCROLL_HEIGHT: number = 100;
@@ -36,7 +37,8 @@ function CNet({ onSendMessage }: PromptSectionProps) {
     if (!inputValue.trim()) return;
 
     // 2. Trigger the parent function with the typed text payload!
-    onSendMessage(inputValue.trim());
+    const message:MessageData = new MessageData("user",inputValue.trim());
+    onSendMessage(message);
 
     // 3. Wipe the input box clean for the next prompt
     setInputValue('');

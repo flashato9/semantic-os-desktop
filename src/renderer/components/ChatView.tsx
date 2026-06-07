@@ -4,47 +4,34 @@ import icon from '../../assets/icon.svg';
 import './ChatView.css';
 import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
-import { MessageData } from '../../main_renderer/interfaces';
-import { v4 as uuidv4 } from 'uuid'
+import { MessageData, SystemMessageData } from '../../main_renderer/classes';
 
 const SAMPLE_MESSAGES = [
-  {
-    sender: 'user' as const,
-    text: 'Hello! I need a simple array structure for my messaging view.',
-    id: "1"
-  },
-  {
-    sender: 'system' as const,
-    text: 'Local AI agent connected. Ready to process text inputs.',
-    id: "2"
-  },
-  {
-    sender: 'user' as const,
-    text: 'Perfect. Let\'s keep it down to just the sender tag and the string text contents.',
-    id: "3"
-  },
-  {
-    sender: 'system' as const,
-    text: 'Data packet layout updated. Non-essential tracking values dropped.',
-    id: "4"
-  },
-    {
-    sender: 'user' as const,
-    text: 'Perfect. Let\'s keep it down to just the sender tag and the string text contents.',
-    id: "5"
-  },
+  new MessageData(
+    'user',
+    'Hello! I need a simple array structure for my messaging view.',
+  ),
+  new MessageData(
+    'system',
+    'Local AI agent connected. Ready to process text inputs.'
+  ),
+  new MessageData(
+    'user',
+    'Perfect. Let\'s keep it down to just the sender tag and the string text contents.'
+  ),
+  new MessageData(
+    'system',
+    'Data packet layout updated. Non-essential tracking values dropped.'
+  ),
+  new MessageData(
+    'user',
+    'Perfect. Let\'s keep it down to just the sender tag and the string text contents.'
+  ),
 ];
 
-function sendMessageToGraph(message:MessageData){
-  window.electron?.ipcRenderer.sendMessage('incoming-chat-messages', [message]);
-}
-
-window.electron?.ipcRenderer.on("received-chat-messages",(result) => {
-  console.log('Response from Main -->', result);
-});
 
 function CNet() {
-  const [messages, setMessages] = useState<MessageData[]>([
+const [messages, setMessages] = useState<MessageData[]>([
     ...SAMPLE_MESSAGES
   ]);
 
@@ -61,17 +48,33 @@ function CNet() {
     scrollToBottom();
   }, [messages]);
 
+  const sendMessageToGraph = (message:MessageData) => {
+    window.electron?.ipcRenderer.sendMessage('incoming-chat-messages', message);
+  }
   // 2. A central function to append new messages to our list
-  const appendMessage = (text: string) => {
-    const uuid:string = uuidv4();
-    const newMessage: MessageData = {
-      id: uuid,
-      sender: 'user',
-      text: text
-    };
+  const appendMessage = (newMessage: MessageData) => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
-    sendMessageToGraph(newMessage);
+    if(newMessage.sender == 'user'){
+      sendMessageToGraph(newMessage);
+    }
+    
   };
+  useEffect(()=>{
+    window.electron?.ipcRenderer.on("incoming-chat-messages",(...result) => {
+        console.log('Response from Main -->', result[0]);
+      });
+
+    window.electron?.ipcRenderer.on("ai-chat-messages",(...args) => {
+      const input = args[0] as SystemMessageData
+      const result:SystemMessageData = new SystemMessageData(input.message,input.user_message_id,input.id) ;
+      console.log(`AI message has been received from Main -> ${result}`)
+      appendMessage(result);
+    }); 
+  },[])
+  
+
+  
+
   return (<div className="flex h-[97vh] w-full flex-col">
   {/* Prompt Messages */}
   <div
@@ -80,8 +83,7 @@ function CNet() {
       {messages.map((msg, index) => (
           <ChatMessage 
             key={index} 
-            sender={msg.sender} 
-            text={msg.text} 
+            message = {msg}
           />
         ))}  
         <div ref={messagesEndRef} />

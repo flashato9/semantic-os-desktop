@@ -14,7 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {MessageData} from "../main_renderer/interfaces"
+import {MessageData, SystemMessageData} from "../main_renderer/classes"
 
 class AppUpdater {
   constructor() { //this is how you create a constructor in TypeScript
@@ -28,18 +28,20 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('incoming-chat-messages', async (event, arg) => {
+ipcMain.on('incoming-chat-messages', async (event, ...args) => {
 
-  const message: MessageData = arg[0];
-  console.log(`A message was received from render process. The message contains - ${JSON.stringify(message)}`)
+  const user_message: MessageData = new MessageData(args[0].sender,args[0].message,args[0].id)
+  console.log(`A message was received from render process. The message contains - ${JSON.stringify(user_message)}`)
   console.log("Sending the message to the agent for processing...")
   // TODO send message to langgraph
   console.log("The message has been sent to the agent.")
-  event.reply('received-chat-messages', `The main process has recieved and processed messageid - ${message.id}.`);
+  event.reply('incoming-chat-messages', `The main process has recieved and processed messageid - ${user_message.id}.`);
+  //TODO get response from langgraph
+  const ai_message:SystemMessageData = new SystemMessageData("some radnodm system message",user_message.id)
+  console.log(`Repsonse message from langgraph - ${ai_message}`)
+  event.reply('incoming-chat-messages',`The response message has been received from langgraph for messageid - ${user_message.id}.`)
+  mainWindow?.webContents.send("ai-chat-messages", ai_message)
 });
-
-
-ipcMain.emit
 
 //Here we are defining an interface on the ipcMain. This means the front end can call this method ipc-example (i.e., via the preloader), and it will run the anonymous function here.
 //when this anon funciton urns, it will reply to the enet with "IPC test: pong" and log the user's event to the terminal. 

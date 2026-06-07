@@ -1,8 +1,8 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { Channels } from '../main_renderer/types';
 
-export type Channels = 'incoming-chat-messages'| "received-chat-messages"; // setting the type Channels to "ipc-example"
 //creating a wrapper for ipcRenderer
 const electronHandler = {
   ipcRenderer: { //here ipcRenderer is a string.

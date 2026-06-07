@@ -4,12 +4,12 @@ import icon from '../../assets/icon.svg';
 import humanAvatar from '../../../assets/chat/human.svg';
 import aiAvatar from '../../../assets/chat/nn.svg';
 import './ChatMessage.css';
+import { MessageData } from '../../main_renderer/classes';
 
 interface ChatMessageProps {
-  sender: 'user' | 'system';
-  text: string;
+  message: MessageData
 }
-function CNet({ sender, text }: ChatMessageProps) {
+function CNet({ message }: ChatMessageProps) {
 
   let result: JSX.Element = (
     <div className="flex flex-row px-4 py-8 sm:px-6 border-b border-slate-400/20 dark:border-slate-700/50">
@@ -20,11 +20,11 @@ function CNet({ sender, text }: ChatMessageProps) {
       />
 
       <div className="flex max-w-3xl items-center">
-        <p>{text}</p>
+        <p>{message.message}</p>
       </div>
     </div>
   );
-  if (sender == "system"){
+  if (message.sender == "system"){
     result = (
       <div className="flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6 border-b border-slate-400/20 dark:border-slate-700/50">
       <img
@@ -36,7 +36,7 @@ function CNet({ sender, text }: ChatMessageProps) {
         className="flex w-full flex-col items-start lg:flex-row lg:justify-between"
       >
         <p className="max-w-3xl">
-          {text}
+          {message.message}
         </p>
         <div
           className="mt-4 flex flex-row justify-start gap-x-2 text-slate-500 lg:mt-0"
@@ -103,8 +103,8 @@ function CNet({ sender, text }: ChatMessageProps) {
   return result;
 }
 
-export default function ChatMessage({ sender, text }: ChatMessageProps) {
+export default function ChatMessage({ message }: ChatMessageProps) {
   return (
-  <CNet sender = {sender} text = {text}/>  
+  <CNet message = {message}/>  
 );
 }
