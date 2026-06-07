@@ -33,11 +33,12 @@ ipcMain.on('incoming-chat-messages', async (event, ...args) => {
   const user_message: MessageData = new MessageData(args[0].sender,args[0].message,args[0].id)
   console.log(`A message was received from render process. The message contains - ${JSON.stringify(user_message)}`)
   console.log("Sending the message to the agent for processing...")
-  // TODO send message to langgraph
+  const assistantId = "93f4c74d-b502-49b3-ac47-34f172a34886";
+  const threadId = "019ea3c3-9f78-7181-9d7a-19a66dfa03d2";
+  const ai_message:SystemMessageData = await sendAndGetAgentResponse(user_message,assistantId,threadId);
   console.log("The message has been sent to the agent.")
   event.reply('incoming-chat-messages', `The main process has recieved and processed messageid - ${user_message.id}.`);
-  //TODO get response from langgraph
-  const ai_message:SystemMessageData = new SystemMessageData("some radnodm system message",user_message.id)
+  //TODO get response from langgraph as stream
   console.log(`Repsonse message from langgraph - ${ai_message}`)
   event.reply('incoming-chat-messages',`The response message has been received from langgraph for messageid - ${user_message.id}.`)
   mainWindow?.webContents.send("ai-chat-messages", ai_message)
@@ -157,3 +158,61 @@ app
     });
   })
   .catch(console.log);
+
+export async function sendAndGetAgentResponse(userMessage: MessageData,assistantId:string, threadId:String): Promise<SystemMessageData> {
+  // 1. Dynamic Thread Configuration URL
+  const url = `http://127.0.0.1:2024/threads/${threadId}/runs/wait`;
+
+  try {
+    // 2. Fire the native Node.js fetch call
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        assistant_id: assistantId,
+        input: {
+          messages: [
+            {
+              // 🚀 Dynamic insertion: Mapping your frontend message fields into the network body
+              content: userMessage.message, 
+              type: 'human'
+            }
+          ]
+        }
+      })
+    });
+
+    // 3. Network status guard rail
+    if (!response.ok) {
+      throw new Error(`[LangGraph Error]: Server responded with a bad status code -> ${response.status}`);
+    }
+
+    // 4. Extract the raw JSON object layout
+    const rawResponseBody = await response.json() as any;
+    console.log("Raw Response back from LangGraph Server:", rawResponseBody);
+    const graphMessages = rawResponseBody?.messages || [];
+    const aiLastResponse = graphMessages[graphMessages.length - 1];
+
+    const aiMessageText = aiLastResponse?.content || aiLastResponse?.content[0]?.text || "No agent response text found.";
+
+    // 5. Build your pristine class instance, cross-referencing the original user message ID!
+    const generatedAiClassInstance = new SystemMessageData(
+      aiMessageText, 
+      userMessage.id // Links the system response to the specific user chat bubble ID
+    );
+    return generatedAiClassInstance;
+
+  } catch (error: any) {
+    console.error("Critical failure during API invocation sequence:", error.message);
+    
+    // Fallback: Hand back an explicit system error message class so the UI doesn't hang forever
+    return new SystemMessageData(
+      `Failed to reach the AI engine: ${error.message}`, 
+      userMessage.id
+    );
+  }
+}
+
