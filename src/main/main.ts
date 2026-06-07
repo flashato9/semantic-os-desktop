@@ -196,7 +196,7 @@ export async function sendAndGetAgentResponse(userMessage: MessageData,assistant
     const graphMessages = rawResponseBody?.messages || [];
     const aiLastResponse = graphMessages[graphMessages.length - 1];
 
-    const aiMessageText = aiLastResponse?.content || aiLastResponse?.content[0]?.text || "No agent response text found.";
+    const aiMessageText = aiLastResponse?.content[0]?.text || aiLastResponse?.content || "No agent response text found.";
 
     // 5. Build your pristine class instance, cross-referencing the original user message ID!
     const generatedAiClassInstance = new SystemMessageData(

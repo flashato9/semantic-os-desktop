@@ -39,7 +39,7 @@ if (
 }
 
 const configuration: webpack.Configuration = {
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
 
   mode: 'development',
 
