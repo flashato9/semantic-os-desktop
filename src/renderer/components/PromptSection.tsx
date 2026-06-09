@@ -6,15 +6,20 @@ import { MessageData } from '../../main_renderer/classes';
 
 interface PromptSectionProps {
   onSendMessage: (newMessage: MessageData) => void;
+  onToggleOverlay: () => void;
 }
 
 const MAX_SCROLL_HEIGHT: number = 100;
 
-function CNet({ onSendMessage }: PromptSectionProps) {
+function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
 
   const [inputValue, setInputValue] = useState('');
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleInitAgent = async () => {
+    onToggleOverlay(); 
+  };
   
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -61,6 +66,7 @@ function CNet({ onSendMessage }: PromptSectionProps) {
       <button
         className="hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-600 sm:p-2"
         type="button"
+        onClick={handleInitAgent}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -121,8 +127,8 @@ function CNet({ onSendMessage }: PromptSectionProps) {
   return result;
 }
 
-export default function PromptSection({ onSendMessage }: PromptSectionProps) {
+export default function PromptSection({ onSendMessage , onToggleOverlay}: PromptSectionProps) {
   return (
-  <CNet onSendMessage={onSendMessage} />  
+  <CNet onSendMessage={onSendMessage} onToggleOverlay={onToggleOverlay} />  
 );
 }

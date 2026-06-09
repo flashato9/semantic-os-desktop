@@ -5,6 +5,7 @@ import './ChatView.css';
 import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
 import { MessageData, SystemMessageData } from '../../main_renderer/classes';
+import AgentOverlay from './MoreOptionsOverlay';
 
 const SAMPLE_MESSAGES = [
   new MessageData(
@@ -31,9 +32,16 @@ const SAMPLE_MESSAGES = [
 
 
 function CNet() {
-const [messages, setMessages] = useState<MessageData[]>([
-    ...SAMPLE_MESSAGES
-  ]);
+  const [messages, setMessages] = useState<MessageData[]>([
+      ...SAMPLE_MESSAGES
+    ]);
+
+  const [showOverlay, setShowOverlay] = useState<boolean>(false);
+
+  const toggleOverlay = () =>{
+    setShowOverlay(!showOverlay);
+  };
+  
 
   // 1. Create a reference anchor point for the bottom of the chat
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,11 +80,17 @@ const [messages, setMessages] = useState<MessageData[]>([
     }); 
   },[])
   
-
+  
   
 
-  return (<div className="flex h-[97vh] w-full flex-col">
-  {/* Prompt Messages */}
+  return (<div className="relative flex h-[97vh] w-full flex-col">
+  {showOverlay && (
+    <div className="absolute bottom-16 left-2 z-50">
+      <AgentOverlay 
+          onClose={() => setShowOverlay(false)} 
+        />
+    </div>
+      )}
   <div
     className="flex-1 overflow-y-auto bg-slate-300 text-sm leading-6 text-slate-900 shadow-md dark:bg-slate-800 dark:text-slate-300 sm:text-base sm:leading-7"
   >
@@ -88,7 +102,7 @@ const [messages, setMessages] = useState<MessageData[]>([
         ))}  
         <div ref={messagesEndRef} />
   </div>
-  <PromptSection onSendMessage={appendMessage}/>
+  <PromptSection onSendMessage={appendMessage} onToggleOverlay={toggleOverlay}/>
 </div>
   );
 }
