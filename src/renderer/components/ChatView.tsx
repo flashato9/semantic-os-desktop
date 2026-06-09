@@ -83,27 +83,25 @@ function CNet() {
   
   
 
-  return (<div className="relative flex h-[97vh] w-full flex-col">
-  {showOverlay && (
-    <div className="absolute bottom-16 left-2 z-50">
-      <AgentOverlay 
-          onClose={() => setShowOverlay(false)} 
-        />
-    </div>
-      )}
-  <div
-    className="flex-1 overflow-y-auto bg-slate-300 text-sm leading-6 text-slate-900 shadow-md dark:bg-slate-800 dark:text-slate-300 sm:text-base sm:leading-7"
-  >
+  return (<div className="chat-view-container">
+    {showOverlay && (
+      <div className="chat-overlay-anchor">
+        <AgentOverlay />
+      </div>
+    )}
+    
+    <div className="chat-scroller-viewport">
       {messages.map((msg, index) => (
-          <ChatMessage 
-            key={index} 
-            message = {msg}
-          />
-        ))}  
-        <div ref={messagesEndRef} />
+        <ChatMessage 
+          key={index} 
+          message={msg}
+        />
+      ))}  
+      <div ref={messagesEndRef} />
+    </div>
+
+    <PromptSection onSendMessage={appendMessage} onToggleOverlay={toggleOverlay}/>
   </div>
-  <PromptSection onSendMessage={appendMessage} onToggleOverlay={toggleOverlay}/>
-</div>
   );
 }
 

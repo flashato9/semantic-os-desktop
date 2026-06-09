@@ -10,3 +10,49 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Main layout wrapper bar at the bottom of the chat view */
+.prompt-form-container {
+  @apply flex w-full items-center rounded-b-md border-t border-slate-300 bg-slate-200 p-2;
+  @apply dark:border-slate-700 dark:bg-slate-900;
+}
+
+/* Left action toggle icon button styling */
+.prompt-action-btn {
+  @apply hover:text-blue-600 sm:p-2 transition-colors;
+  @apply dark:text-slate-200 dark:hover:text-blue-600;
+}
+
+/* Core dynamic textarea configuration */
+.prompt-textarea-input {
+  /* REMOVED 'no-scrollbar' from @apply since it's handled below natively */
+  @apply resize-none mx-2 flex min-h-full w-full rounded-md p-2 text-base;
+  
+  /* Color maps & basic border metrics */
+  @apply border border-slate-300 bg-slate-50 text-slate-900 placeholder-slate-400;
+  @apply dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50 dark:placeholder-slate-400;
+  
+  /* Focus rings and text-box selection triggers */
+  @apply focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600;
+  @apply dark:focus:border-blue-600 dark:focus:ring-blue-600;
+
+  /* Native CSS property application (Safer alternative to applying your custom class) */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Ensure chromium scrollbars hide directly inside the textarea target */
+.prompt-textarea-input::-webkit-scrollbar {
+  display: none;
+}
+
+/* Right message dispatch trigger icon button styling */
+.prompt-submit-btn {
+  @apply inline-flex hover:text-blue-600 sm:p-2 transition-colors;
+  @apply dark:text-slate-200 dark:hover:text-blue-600;
+}
+
+/* Shared vector measurement standard across bar controllers */
+.prompt-btn-svg {
+  @apply h-6 w-6;
+}

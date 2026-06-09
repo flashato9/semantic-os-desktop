@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './MoreOptionsOverlay.css';
 
-interface AgentOverlayProps {
-  onClose: () => void;
-}
 enum AgentStatus{
     Connected = "Connected 🟢",
     Disconnected = "Disconnected 🔴",
@@ -29,7 +26,7 @@ async function initiateGraphProcess() {
 }
 
 
-function CNet({onClose }: AgentOverlayProps) {
+function CNet() {
     const defaultState = {
         status: AgentStatus.Disconnected,
         connectAction: ConnectAction.Connect
@@ -117,9 +114,9 @@ function CNet({onClose }: AgentOverlayProps) {
     );
 }
 
-export default function AgentOverlay({ onClose }: AgentOverlayProps) {
+export default function AgentOverlay() {
     return (
-    <CNet onClose={onClose} />  
+    <CNet/>  
 );
 }
 
