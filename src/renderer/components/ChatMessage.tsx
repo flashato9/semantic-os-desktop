@@ -4,8 +4,8 @@ import icon from '../../assets/icon.svg';
 import humanAvatar from '../../../assets/chat/human.svg';
 import aiAvatar from '../../../assets/chat/nn.svg';
 import './ChatMessage.css';
-import { MessageData } from '../../main_renderer/classes';
-
+import { MessageData } from '../../main_renderer/classes'; 
+import { ThumbsUpIcon, ThumbsDownIcon, CopyMessageIcon } from '../../../assets/icons/ChatMessage';
 interface ChatMessageProps {
   message: MessageData
 }
@@ -40,25 +40,15 @@ if (message.sender == "system") {
         
         <div className="chat-action-buttons-group">
           <button className="chat-icon-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" className="chat-icon-svg" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M7 11v8a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-7a1 1 0 0 1 1 -1h3a4 4 0 0 0 4 -4v-1a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1 -2 2h-7a3 3 0 0 1 -3 -3"></path>
-            </svg>
+            <ThumbsUpIcon />
           </button>
           
           <button className="chat-icon-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" className="chat-icon-svg" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M7 13v-8a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v7a1 1 0 0 0 1 1h3a4 4 0 0 1 4 4v1a2 2 0 0 0 4 0v-5h3a2 2 0 0 0 2 -2l-1 -5a2 3 0 0 0 -2 -2h-7a3 3 0 0 0 -3 3"></path>
-            </svg>
+            <ThumbsDownIcon />
           </button>
           
           <button className="chat-icon-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" className="chat-icon-svg" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path>
-              <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path>
-            </svg>
+            <CopyMessageIcon/>
           </button>
         </div>
       </div>
