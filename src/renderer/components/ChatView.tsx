@@ -6,6 +6,7 @@ import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
 import { MessageData, SystemMessageData } from '../../main_renderer/classes';
 import AgentOverlay from './MoreOptionsOverlay';
+import { Channel } from '../../main_renderer/enums';
 
 const SAMPLE_MESSAGES = [
   new MessageData(
@@ -57,7 +58,7 @@ function CNet() {
   }, [messages]);
 
   const sendMessageToGraph = (message:MessageData) => {
-    window.electron?.ipcRenderer.sendMessage('incoming-chat-messages', message);
+    window.electron?.ipcRenderer.sendMessage(Channel.INCOMING_CHAT_MESSAGE, message);
   }
   // 2. A central function to append new messages to our list
   const appendMessage = (newMessage: MessageData) => {
@@ -68,11 +69,11 @@ function CNet() {
     
   };
   useEffect(()=>{
-    window.electron?.ipcRenderer.on("incoming-chat-messages",(...result) => {
+    window.electron?.ipcRenderer.on(Channel.INCOMING_CHAT_MESSAGE,(...result) => {
         console.log('Response from Main -->', result[0]);
       });
 
-    window.electron?.ipcRenderer.on("ai-chat-messages",(...args) => {
+    window.electron?.ipcRenderer.on(Channel.AI_CHAT_MESSAGES,(...args) => {
       const input = args[0] as SystemMessageData
       const result:SystemMessageData = new SystemMessageData(input.message,input.user_message_id,input.id) ;
       console.log(`AI message has been received from Main -> ${result}`)

@@ -15,6 +15,12 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import {MessageData, SystemMessageData} from "../main_renderer/classes"
+import { Channel, MethodName } from '../main_renderer/enums';
+import { spawn,exec } from 'child_process';
+import fs from 'fs';
+import { promisify } from 'util';
+
+
 
 class AppUpdater {
   constructor() { //this is how you create a constructor in TypeScript
@@ -27,8 +33,10 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+const activeGraphProcesses = new Map<string, any>();
+const execAsync = promisify(exec);
 
-ipcMain.on('incoming-chat-messages', async (event, ...args) => {
+ipcMain.on(Channel.INCOMING_CHAT_MESSAGE, async (event, ...args) => {
 
   const user_message: MessageData = new MessageData(args[0].sender,args[0].message,args[0].id)
   console.log(`A message was received from render process. The message contains - ${JSON.stringify(user_message)}`)
@@ -37,12 +45,31 @@ ipcMain.on('incoming-chat-messages', async (event, ...args) => {
   const threadId = "019ea3c3-9f78-7181-9d7a-19a66dfa03d2";
   const ai_message:SystemMessageData = await sendAndGetAgentResponse(user_message,assistantId,threadId);
   console.log("The message has been sent to the agent.")
-  event.reply('incoming-chat-messages', `The main process has recieved and processed messageid - ${user_message.id}.`);
+  event.reply(Channel.INCOMING_CHAT_MESSAGE, `The main process has recieved and processed messageid - ${user_message.id}.`);
   //TODO get response from langgraph as stream
   console.log(`Repsonse message from langgraph - ${ai_message}`)
   event.reply('incoming-chat-messages',`The response message has been received from langgraph for messageid - ${user_message.id}.`)
-  mainWindow?.webContents.send("ai-chat-messages", ai_message)
+  mainWindow?.webContents.send(Channel.AI_CHAT_MESSAGES, ai_message)
+
 });
+
+ipcMain.handle(MethodName.isLangGraphProcessRunning, async(_, ...args) =>{
+  console.log("Request Received from renderer: isLangGraphProcessRunning => Processing Request...")
+    const result = await isGraphProcessRunning()
+    return result;
+})
+ipcMain.handle(MethodName.initializeGraphProcess, async(_, ...args) =>{
+  console.log("Request Received from renderer: initializeGraphProcess => Processing Request...")
+    await initializeGraphProcess()
+    
+    return;
+})
+ipcMain.handle(MethodName.terminateGraphProcess, async(_, ...args) =>{
+    console.log("Request Received from renderer: terminateGraphProcess => Processing Request...")
+    await terminateGraphProcess(activeGraphProcesses)
+    return;
+})
+
 
 //Here we are defining an interface on the ipcMain. This means the front end can call this method ipc-example (i.e., via the preloader), and it will run the anonymous function here.
 //when this anon funciton urns, it will reply to the enet with "IPC test: pong" and log the user's event to the terminal. 
@@ -215,4 +242,236 @@ export async function sendAndGetAgentResponse(userMessage: MessageData,assistant
     );
   }
 }
+async function waitForGraphToStabilize(): Promise<boolean> {
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  let currentDelay = 1000;   // Start by waiting 1 second
+  const maxDelay = 8000;     // Cap individual wait intervals at 8 seconds
+  const maxDuration = 60000; // Hard limit: give up completely after 1 minute total
+  const startTime = Date.now();
 
+  while (Date.now() - startTime < maxDuration) {
+    // Check if the server port responds
+    const isOnline = await isGraphProcessRunning();
+
+    if (isOnline) {
+      console.log(`[Health Verification] ✅ LangGraph dev server is online! (Verified in ${((Date.now() - startTime) / 1000).toFixed(1)}s)`);
+      return true;
+    }
+
+    console.log(`[Health Verification] Server not ready yet. Retrying in ${(currentDelay / 1000).toFixed(1)}s...`);
+    await delay(currentDelay);
+    
+    // Grow the delay exponentially (1s -> 2s -> 4s -> 8s -> 8s...)
+    currentDelay = Math.min(currentDelay * 2, maxDelay);
+  }
+
+  return false; // Timed out without a successful response
+}
+
+async function initializeGraphProcess() {
+  try {
+    console.log("Preparing LangGraph subprocess environment...");
+    
+    // 1. Setup your log file stream
+    const logStream = fs.createWriteStream('./logs/graph-process.log', { flags: 'a' });
+    
+    // 2. Define your paths safely
+    const targetDir = 'C:\\Users\\Ato_K\\Documents\\programming\\SemanticOS'; 
+    const isWindows = process.platform === 'win32';
+    
+    // 3. Chain the commands together based on the operating system
+    const commandSequence = isWindows
+      ? `.\\.venv\\Scripts\\activate && langgraph dev`
+      : `cd "${targetDir}" && source .venv/bin/activate && langgraph dev`;
+
+    // 4. Spawn the system shell
+    const shell = isWindows ? 'cmd.exe' : '/bin/bash';
+    const shellArgs = isWindows ? ['/c', commandSequence] : ['-c', commandSequence];
+
+    const child = spawn(shell, shellArgs, {
+      cwd: targetDir,
+      detached: false,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env } 
+    });
+
+    const pid = child.pid;
+
+    // 5. Pipe the shell outputs right into your file log
+    child.stdout.pipe(logStream);
+    child.stderr.pipe(logStream);
+
+    // 6. Register the running process instance to your global map tracker
+    activeGraphProcesses.set(`graph-${pid}`, {
+      process: child,
+      startedAt: new Date()
+    });
+
+    console.log(`LangGraph background shell running under PID: ${pid}. Verifying port status...`);
+
+    // 7. 🌟 CALL THE REFACTORED BACKOFF HELPER
+    const stable = await waitForGraphToStabilize();
+
+    if (!stable) {
+      console.error(`[Initialization] ❌ LangGraph server failed to respond on port 2024 within 1 minute.`);
+      
+      // Automatic safety cleanup if it fails to stabilize
+      await terminateGraphProcess(activeGraphProcesses);
+      
+      throw new Error("LangGraph service failed to start properly. Check your internal graph-process.log file.");
+    }
+
+    // Success! Return back to the Renderer process
+    return { success: true, pid: pid };
+
+  } catch (error: any) {
+    console.error("Failed to execute LangGraph workflow shell:", error);
+    throw new Error(`LangGraph Shell Launch Failed: ${error.message}`);
+  }
+}
+
+
+async function findOrphanedGraphPID(): Promise<string | null> {
+  try {
+    if (process.platform === 'win32') {
+      const { stdout } = await execAsync('netstat -aon | findstr :2024');
+      
+      if (!stdout || stdout.trim() === '') return null;
+
+      // Split into lines and grab the first active connection line
+      const lines = stdout.trim().split('\n');
+      const parts = lines[0].trim().split(/\s+/);
+      
+      // The process ID is always the very last token on a netstat line
+      const orphanPid = parts[parts.length - 1];
+      
+      return (orphanPid && orphanPid !== '0') ? orphanPid : null;
+    }
+    
+    // Mac/Linux Fallback
+    const { stdout } = await execAsync('lsof -t -i:2024');
+    return stdout ? stdout.trim().split('\n')[0] : null;
+
+  } catch (error) {
+    // If netstat/findstr finds nothing, it throws an error. We catch it and return null.
+    return null;
+  }
+}
+async function terminateOrphanTree(pid: string): Promise<boolean> {
+  if (!pid) return false;
+  
+  try {
+    console.log(`[System Cleanup] Killing orphan process family tree under PID: ${pid}`);
+    
+    if (process.platform === 'win32') {
+      // /F forces termination, /T kills the process and all child processes started by it
+      await execAsync(`taskkill /F /T /PID ${pid}`);
+    } else {
+      // Mac/Linux tree kill alternative
+      await execAsync(`kill -9 ${pid}`);
+    }
+    
+    console.log(`[System Cleanup] Process tree for PID ${pid} successfully cleared.`);
+    return true;
+  } catch (error) {
+    console.error(`[System Cleanup] Failed to kill process tree for PID ${pid}:`, error);
+    return false;
+  }
+}
+
+
+async function terminateGraphProcess(activeGraphProcesses?: Map<string, any>) {
+  try {
+    console.log("[Termination] Starting safe graph teardown sequence...");
+
+    // 1. Scan the network stack for the PID holding port 2024
+    const lingeringPid = await findOrphanedGraphPID();
+
+    if (lingeringPid) {
+      // 🛡️ CRITICAL SAFETY GUARD: Never allow critical Windows/System process IDs to be targeted
+      const protectedPids = ['0', '4', '1', '2', '3']; 
+      if (protectedPids.includes(lingeringPid.trim())) {
+        console.warn(`[Termination Safe-Guard] Aborted execution. Targeted PID (${lingeringPid}) is an OS core process.`);
+        return false;
+      }
+
+      // 2. Safely wipe out the process tree
+      console.log(`[Termination] Found active instance under PID: ${lingeringPid}. Cleaving tree...`);
+      await terminateOrphanTree(lingeringPid);
+    } else {
+      console.log("[Termination] Port 2024 is already completely open. No background process detected.");
+    }
+
+    // 3. Clean up the application's local Map memory registry if provided
+    if (activeGraphProcesses && activeGraphProcesses.size > 0) {
+      console.log("[Termination] Purging active process references from application memory...");
+      
+      // If you track the active process, make sure the root wrapper shell is also signaled to close
+      const firstEntry = activeGraphProcesses.values().next().value;
+      if (firstEntry?.process) {
+        try {
+          firstEntry.process.kill('SIGKILL');
+        } catch {
+          // Ignore if the shell process wrapper was already dead
+        }
+      }
+      
+      activeGraphProcesses.clear();
+    }
+
+    console.log("[Termination] ✅ Graph process and port 2024 cleared successfully.");
+    return true;
+
+  } catch (error: any) {
+    console.error("[Termination] ❌ Fatal error occurred during the graph teardown sequence:", error.message);
+    return false;
+  }
+}
+
+
+export async function isGraphProcessRunning(): Promise<boolean> {
+  // 1. Core health check target configuration
+  const url = `http://127.0.0.1:2024/ok`;
+  
+  // Create an AbortController to enforce a strict timeout
+  // This prevents the main process from hanging if the port is stuck in a half-open state
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5-second deadline
+
+  try {
+    console.log(`[Main Process] Probing LangGraph health endpoint: ${url}`);
+    
+    // 2. Fire a standard GET check request
+    const response = await fetch(url, {
+      method: 'GET', // LangGraph API responds with 'ok' to GET hooks
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    // Clear the safety timeout if the server responds fast
+    clearTimeout(timeoutId);
+
+    // 3. Evaluate health status
+    if (response.ok) {
+      console.log("[Main Process] ✅ LangGraph dev server responded successfully! It is active.");
+      return true;
+    }
+
+    console.warn(`[Main Process] ⚠️ Server port responded, but returned status code: ${response.status}`);
+    return false;
+
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    // Catch intentional timeout abort signals gracefully
+    if (error.name === 'AbortError') {
+      console.error("[Main Process] ❌ LangGraph health check timed out. Server is non-responsive.");
+    } else {
+      console.log("[Main Process] ❌ LangGraph server is completely offline (Connection refused).");
+    }
+    
+    return false;
+  }
+}

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './MoreOptionsOverlay.css';
+import { MethodName } from '../../main_renderer/enums';
 
 enum AgentStatus{
     Connected = "Connected 🟢",
     Disconnected = "Disconnected 🔴",
-    Connecting = "Connecting ⏳"
+    Connecting = "Connecting ⏳",
+    Disconnecting = "Disconnecting ⏳"
 };
 enum ConnectAction{
     Connect = "Connect 🟢",
@@ -16,12 +18,17 @@ interface AgentOverlayState {
 }
 async function isGraphProcessRunning():Promise<Boolean> {
     console.log("checking if graph process is running.")
-    await new Promise(f => setTimeout(f, 1000));
-    return false;
+    const result:Boolean = await window.electron?.ipcRenderer.invoke(MethodName.isLangGraphProcessRunning, []);
+    return result;
 }
 async function initiateGraphProcess() {
     console.log("initiating graph process")
-    await new Promise(f => setTimeout(f, 5000));
+    await window.electron?.ipcRenderer.invoke(MethodName.initializeGraphProcess, []);
+    return;
+}
+async function terminateGraphProcess() {
+    console.log("terminating graph process")
+    await window.electron?.ipcRenderer.invoke(MethodName.terminateGraphProcess, []);
     return;
 }
 
@@ -45,14 +52,16 @@ function CNet() {
         if(_isGraphProcessRunning){
             setAgentOverlayState({
                 ...agentOverlayState,
-                status: AgentStatus.Connected
+                status: AgentStatus.Connected,
+                connectAction: ConnectAction.Disconnect
                 }   
             )
         }
         if(!_isGraphProcessRunning){
             setAgentOverlayState({
                 ...agentOverlayState,
-                status: AgentStatus.Disconnected
+                status: AgentStatus.Disconnected,
+                connectAction: ConnectAction.Connect
                 }   
             )
         }
@@ -66,24 +75,21 @@ function CNet() {
         let _isGraphProcessRunning:Boolean = await isGraphProcessRunning()
         if (!_isGraphProcessRunning){
             await initiateGraphProcess()
-            _isGraphProcessRunning = await isGraphProcessRunning()
         }
+        await getGraphStatusAndUpdateUIState();
+        return;
+    };
+     const deactivateLangGraph = async () =>{
+        setAgentOverlayState({
+            ...agentOverlayState,
+            status: AgentStatus.Disconnecting
+        })
+        console.log("deactivating langgraph...")
+        let _isGraphProcessRunning:Boolean = await isGraphProcessRunning()
         if (_isGraphProcessRunning){
-            console.log("graph process is running. Setting active flag to true")
-            setAgentOverlayState({
-                ...agentOverlayState,
-                status: AgentStatus.Connected,
-                connectAction: ConnectAction.Disconnect
-            })
+            await terminateGraphProcess()
         }
-        if(!_isGraphProcessRunning){
-            console.log("graph process is not running after attempt to activate. Setting active flag to true")
-            setAgentOverlayState({
-                ...agentOverlayState,
-                status: AgentStatus.Disconnected,
-                connectAction: ConnectAction.Connect
-            })
-        }
+        await getGraphStatusAndUpdateUIState();
         return;
     };
     useEffect(()=>{
@@ -97,8 +103,8 @@ function CNet() {
     <div className="agent-status-card">
         <header className="agent-status-header">
             <h1>Agent Status</h1>
-            <button type="button" onClick={activateLangGraph}
-            disabled={agentOverlayState.status === AgentStatus.Connecting}
+            <button type="button" onClick={agentOverlayState.status == AgentStatus.Connected ? deactivateLangGraph : activateLangGraph}
+            disabled={agentOverlayState.status === AgentStatus.Connecting || agentOverlayState.status === AgentStatus.Disconnecting }
             >
                 {agentOverlayState.connectAction}
             </button>
