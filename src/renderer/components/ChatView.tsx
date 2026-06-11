@@ -4,38 +4,22 @@ import icon from '../../assets/icon.svg';
 import './ChatView.css';
 import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
-import { MessageData, SystemMessageData } from '../../main_renderer/classes';
+import { MessageData, AIMessageData } from '../../main_renderer/classes';
 import AgentOverlay from './MoreOptionsOverlay';
-import { Channel } from '../../main_renderer/enums';
+import { Channel, MethodName, Sender } from '../../main_renderer/enums';
 
-const SAMPLE_MESSAGES = [
-  new MessageData(
-    'user',
-    'Hello! I need a simple array structure for my messaging view.',
-  ),
-  new MessageData(
-    'system',
-    'Local AI agent connected. Ready to process text inputs.'
-  ),
-  new MessageData(
-    'user',
-    'Perfect. Let\'s keep it down to just the sender tag and the string text contents.'
-  ),
-  new MessageData(
-    'system',
-    'Data packet layout updated. Non-essential tracking values dropped.'
-  ),
-  new MessageData(
-    'user',
-    'Perfect. Let\'s keep it down to just the sender tag and the string text contents.'
-  ),
-];
 
+async function getChatHistory(assistantId:string,threadId:string): Promise<MessageData[]>{
+  console.log("getting chat history.")
+
+  const result:MessageData[] = await window.electron?.ipcRenderer.invoke(MethodName.getChatHistory, {assistantId:assistantId,threadId:threadId});
+  return result;
+}
 
 function CNet() {
-  const [messages, setMessages] = useState<MessageData[]>([
-      ...SAMPLE_MESSAGES
-    ]);
+  const assistantId = "93f4c74d-b502-49b3-ac47-34f172a34886";
+  const threadId = "019ea3c3-9f78-7181-9d7a-19a66dfa03d2";
+  const [messages, setMessages] = useState<MessageData[]>([]);
 
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
 
@@ -68,17 +52,29 @@ function CNet() {
     }
     
   };
+  const initializeMessages = (historyMessages: MessageData[]) => {
+    const messages = historyMessages.filter((elem:MessageData)=> {
+      return elem.message && elem.sender == Sender.AI || elem.sender == Sender.USER
+    })
+    setMessages((prevMessages) => [...messages]); 
+  };
+  const getChatHistoryAndUpdateUI = async (assistantId:string,threadId:string) => {
+    const chatHistory:MessageData[] = await getChatHistory(assistantId,threadId);
+    initializeMessages(chatHistory);
+  };
   useEffect(()=>{
     window.electron?.ipcRenderer.on(Channel.INCOMING_CHAT_MESSAGE,(...result) => {
         console.log('Response from Main -->', result[0]);
       });
 
     window.electron?.ipcRenderer.on(Channel.AI_CHAT_MESSAGES,(...args) => {
-      const input = args[0] as SystemMessageData
-      const result:SystemMessageData = new SystemMessageData(input.message,input.user_message_id,input.id) ;
+      const input = args[0] as AIMessageData
+      const result:AIMessageData = new AIMessageData(input.message,input.user_message_id,input.id) ;
       console.log(`AI message has been received from Main -> ${result}`)
       appendMessage(result);
-    }); 
+    });
+
+    getChatHistoryAndUpdateUI(assistantId,threadId)
   },[])
   
   

@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { Sender } from './enums';
 export class MessageData {
   sender: string;
   message: string;
@@ -21,11 +22,11 @@ export class MessageData {
   }
 }
 
-export class SystemMessageData extends MessageData {
+export class AIMessageData extends MessageData {
   user_message_id: string;
 
   constructor(message: string, user_message_id: string,id?:string) {
-    super('system', message,id);
+    super(Sender.AI, message,id);
     this.user_message_id = user_message_id;
   }
 

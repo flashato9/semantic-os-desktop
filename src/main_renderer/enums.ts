@@ -7,5 +7,13 @@ export enum Channel {
 export enum MethodName{
     isLangGraphProcessRunning = "isLangGraphProcessRunning",
     initializeGraphProcess = "initializeGraphProcess",
-    terminateGraphProcess = "terminateGraphProcess"
+    terminateGraphProcess = "terminateGraphProcess",
+    getChatHistory = "getChatHistory"
+}
+
+export enum Sender{
+    USER = "human",
+    AI = "ai", //system for now but should be AI,
+    TOOL = "tool",
+    SYSTEM = "system"
 }

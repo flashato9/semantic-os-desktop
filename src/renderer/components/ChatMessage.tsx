@@ -6,6 +6,7 @@ import aiAvatar from '../../../assets/chat/nn.svg';
 import './ChatMessage.css';
 import { MessageData } from '../../main_renderer/classes'; 
 import { ThumbsUpIcon, ThumbsDownIcon, CopyMessageIcon } from '../../../assets/icons/ChatMessage';
+import { Sender } from '../../main_renderer/enums';
 interface ChatMessageProps {
   message: MessageData
 }
@@ -24,7 +25,7 @@ function CNet({ message }: ChatMessageProps) {
   </div>
 );
 
-if (message.sender == "system") {
+if (message.sender == Sender.AI) {
   result = (
     <div className="chat-message-row system-message">
       <img

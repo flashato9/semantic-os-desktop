@@ -14,8 +14,8 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {MessageData, SystemMessageData} from "../main_renderer/classes"
-import { Channel, MethodName } from '../main_renderer/enums';
+import {MessageData, AIMessageData} from "../main_renderer/classes"
+import { Channel, MethodName, Sender } from '../main_renderer/enums';
 import { spawn,exec } from 'child_process';
 import fs from 'fs';
 import { promisify } from 'util';
@@ -43,7 +43,7 @@ ipcMain.on(Channel.INCOMING_CHAT_MESSAGE, async (event, ...args) => {
   console.log("Sending the message to the agent for processing...")
   const assistantId = "93f4c74d-b502-49b3-ac47-34f172a34886";
   const threadId = "019ea3c3-9f78-7181-9d7a-19a66dfa03d2";
-  const ai_message:SystemMessageData = await sendAndGetAgentResponse(user_message,assistantId,threadId);
+  const ai_message:AIMessageData = await sendAndGetAgentResponse(user_message,assistantId,threadId);
   console.log("The message has been sent to the agent.")
   event.reply(Channel.INCOMING_CHAT_MESSAGE, `The main process has recieved and processed messageid - ${user_message.id}.`);
   //TODO get response from langgraph as stream
@@ -69,6 +69,14 @@ ipcMain.handle(MethodName.terminateGraphProcess, async(_, ...args) =>{
     await terminateGraphProcess(activeGraphProcesses)
     return;
 })
+
+ipcMain.handle(MethodName.getChatHistory, async(_, ...args) =>{
+    console.log("Request Received from renderer: getChatHistory => Processing Request...")
+    const {assistantId, threadId} = args[0];
+    const result:MessageData[] = await getChatHistory(assistantId,threadId);
+    return result;
+})
+
 
 
 //Here we are defining an interface on the ipcMain. This means the front end can call this method ipc-example (i.e., via the preloader), and it will run the anonymous function here.
@@ -186,7 +194,7 @@ app
   })
   .catch(console.log);
 
-export async function sendAndGetAgentResponse(userMessage: MessageData,assistantId:string, threadId:String): Promise<SystemMessageData> {
+async function sendAndGetAgentResponse(userMessage: MessageData,assistantId:string, threadId:String): Promise<AIMessageData> {
   // 1. Dynamic Thread Configuration URL
   const url = `http://127.0.0.1:2024/threads/${threadId}/runs/wait`;
 
@@ -219,14 +227,14 @@ export async function sendAndGetAgentResponse(userMessage: MessageData,assistant
 
     // 4. Extract the raw JSON object layout
     const rawResponseBody = await response.json() as any;
-    console.log("Raw Response back from LangGraph Server:", rawResponseBody);
+    // console.log("Raw Response back from LangGraph Server:", rawResponseBody);
     const graphMessages = rawResponseBody?.messages || [];
     const aiLastResponse = graphMessages[graphMessages.length - 1];
 
     const aiMessageText = aiLastResponse?.content[0]?.text || aiLastResponse?.content || "No agent response text found.";
 
     // 5. Build your pristine class instance, cross-referencing the original user message ID!
-    const generatedAiClassInstance = new SystemMessageData(
+    const generatedAiClassInstance = new AIMessageData(
       aiMessageText, 
       userMessage.id // Links the system response to the specific user chat bubble ID
     );
@@ -236,7 +244,7 @@ export async function sendAndGetAgentResponse(userMessage: MessageData,assistant
     console.error("Critical failure during API invocation sequence:", error.message);
     
     // Fallback: Hand back an explicit system error message class so the UI doesn't hang forever
-    return new SystemMessageData(
+    return new AIMessageData(
       `Failed to reach the AI engine: ${error.message}`, 
       userMessage.id
     );
@@ -465,6 +473,7 @@ export async function isGraphProcessRunning(): Promise<boolean> {
   } catch (error: any) {
     clearTimeout(timeoutId);
     
+    
     // Catch intentional timeout abort signals gracefully
     if (error.name === 'AbortError') {
       console.error("[Main Process] ❌ LangGraph health check timed out. Server is non-responsive.");
@@ -473,5 +482,87 @@ export async function isGraphProcessRunning(): Promise<boolean> {
     }
     
     return false;
+  }
+}
+
+async function extractChronologicalRawMessages(threadId: string): Promise<any[]> {
+  const url = `http://127.0.0.1:2024/threads/${threadId}/history`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 
+      'Accept': 'application/json',
+      'Content-Type': 'application/json' 
+    },
+    body: JSON.stringify({ limit: 100 })
+  });
+
+  if (!response.ok) {
+    throw new Error(`LangGraph server history endpoint returned status -> ${response.status}`);
+  }
+
+  const historyTimeline = await response.json() as any[];
+  if (!Array.isArray(historyTimeline)) {
+    console.warn(`[Main Process] Expected history timeline array, but received:`, historyTimeline);
+    return [];
+  }
+
+  const allMessagesMap = new Map<string, any>();
+
+  // Process backwards (from oldest checkpoint to newest) to naturally order chronologically
+  for (let i = historyTimeline.length - 1; i >= 0; i--) {
+    const checkpointMessages = historyTimeline[i]?.values?.messages || [];
+    for (const msg of checkpointMessages) {
+      if (msg?.id && !allMessagesMap.has(msg.id)) {
+        allMessagesMap.set(msg.id, msg);
+      }
+    }
+  }
+
+  return Array.from(allMessagesMap.values());
+}
+
+export async function getChatHistory(assistantId: string, threadId: string): Promise<MessageData[]> {
+  try {
+    console.log(`[Main Process] Requesting complete chronological thread history log for: ${threadId}`);
+    
+    // 1. Fetch data layer logs
+    const rawMessages = await extractChronologicalRawMessages(threadId);
+
+    // 2. Map raw messages over to standard frontend class representations
+    const formattedMessages: MessageData[] = rawMessages.map((msg: any) => {
+      let senderRole = Sender.AI;
+      if (msg.type === 'human') senderRole = Sender.USER;
+      if (msg.type === 'ai') senderRole = Sender.AI;
+      if (msg.type === 'system') senderRole = Sender.SYSTEM;
+      if (msg.type === 'tool') senderRole = Sender.TOOL;
+
+      const extractedText = msg?.content[0]?.text ?? msg?.content ?? "No content found.";
+      
+      return new MessageData(senderRole, extractedText, msg?.id);
+    });
+
+    // 3. Link dependencies on the ordered dataset (convert AI roles to AIMessageData)
+    for (let index = 0; index < formattedMessages.length; index++) {
+      const msg = formattedMessages[index];
+      
+      if (msg.sender === Sender.AI) {
+        const prevMsg = formattedMessages[index - 1];
+        const prevId = prevMsg.id;
+        
+        formattedMessages[index] = new AIMessageData(
+          msg.message, 
+          prevId, 
+          msg.id
+        );
+      }
+    }
+
+    console.log(`[Main Process] Chronologically compiled ${formattedMessages.length} deep historical bubbles.`);
+    return formattedMessages;
+
+  } catch (error: any) {
+    console.error("[Main Process] Critical failure parsing chat logs:", error.message);
+    return [];
   }
 }
