@@ -1,6 +1,4 @@
-import { useState, FormEvent, ChangeEvent, useEffect, useRef } from 'react';
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import { useState, useEffect, useRef } from 'react';
 import './ChatView.css';
 import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';

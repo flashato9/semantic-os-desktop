@@ -1,6 +1,4 @@
-import { useState, FormEvent, ChangeEvent, JSX } from 'react';
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import { JSX } from 'react';
 import humanAvatar from '../../../assets/chat/human.svg';
 import aiAvatar from '../../../assets/chat/nn.svg';
 import ReactMarkdown from 'react-markdown';
@@ -51,7 +49,7 @@ function CNet({ message }: ChatMessageProps) {
             <ThumbsDownIcon />
           </button> */}
 
-            <button className="chat-icon-btn" type="button">
+            <button className="chat-icon-btn" type="button" onClick={()=>navigator.clipboard.writeText(message.message)}>
               <CopyMessageIcon />
             </button>
           </div>
