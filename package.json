@@ -112,7 +112,9 @@
     "postcss-loader": "^8.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.3.0",
+    "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.3.0",
     "uuid": "^14.0.0"
   },
@@ -120,6 +122,7 @@
     "@electron/rebuild": "^3.7.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "@svgr/webpack": "^8.1.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
