@@ -95,7 +95,7 @@ const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'; //check if you're running in production or not.
 
 if (isDebug) {
-  require('electron-debug').default();
+  require('electron-debug').default({ showDevTools: false });
 }
 //if running in debug mode then import electron-debug
 
@@ -156,8 +156,9 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
+  // const menuBuilder = new MenuBuilder(mainWindow);
+  // menuBuilder.buildMenu();
+  mainWindow.setMenu(null);
 
   // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => { //when the user wants to open a new window ti will direct it to the external browser.

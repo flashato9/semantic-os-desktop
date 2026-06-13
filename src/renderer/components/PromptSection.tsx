@@ -7,14 +7,19 @@ import { SendIcon, MoreOptionsIcon } from "../../../assets/icons/PromptSection";
 interface PromptSectionProps {
   onSendMessage: (newMessage: MessageData) => void;
   onToggleOverlay: () => void;
+  isEnabled: boolean
+}
+interface PromptSectionState{
+  inputValue: string;
 }
 
 const MAX_SCROLL_HEIGHT: number = 100;
 
-function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
+function CNet({ onSendMessage, onToggleOverlay, isEnabled}: PromptSectionProps) {
 
-  const [inputValue, setInputValue] = useState('');
-
+  const [promptSectionState, setPromptSectoinState] = useState<PromptSectionState>({
+    inputValue:''
+  });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleInitAgent = async () => {
@@ -33,9 +38,10 @@ function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
     
     // Apply the pixel calculation directly to the style attribute
     textarea.style.height = `${nextHeight}px`;
-  }, [inputValue]);
+  }, [promptSectionState]);
 
   const handleSubmit = (e: FormEvent) => {
+    const inputValue = promptSectionState.inputValue
     e.preventDefault();
 
     // Block submission if it's empty space
@@ -46,7 +52,10 @@ function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
     onSendMessage(message);
 
     // 3. Wipe the input box clean for the next prompt
-    setInputValue('');
+    setPromptSectoinState({
+      ...promptSectionState,
+      inputValue:''
+    });
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -55,6 +64,12 @@ function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
       handleSubmit(e);
     }
   };
+  const setInputValue = (value:string) => {
+    setPromptSectoinState({
+      ...promptSectionState,
+      inputValue:value
+    });
+  }
 
   let result: JSX.Element = (
     <form className="prompt-form-container" onSubmit={handleSubmit}>
@@ -67,7 +82,7 @@ function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
         onClick={handleInitAgent}
       >
         <MoreOptionsIcon/>
-        <span className="sr-only">Add</span>
+        <span className="sr-only">More Options</span>
       </button>
     </div>
 
@@ -75,11 +90,12 @@ function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
       ref={textareaRef}
       id="chat-input"
       rows={1}
-      value={inputValue}
+      value={promptSectionState.inputValue}
       onChange={(e) => setInputValue(e.target.value)}
       onKeyDown={handleKeyDown}
       className="prompt-textarea-input"
-      placeholder="Please Enter your prompt"
+      placeholder={!isEnabled? "Pending AI Response" :"Please Enter your prompt"}
+      disabled={!isEnabled}
     ></textarea>
 
     <div>
@@ -94,8 +110,8 @@ function CNet({ onSendMessage, onToggleOverlay}: PromptSectionProps) {
   return result;
 }
 
-export default function PromptSection({ onSendMessage , onToggleOverlay}: PromptSectionProps) {
+export default function PromptSection({ onSendMessage , onToggleOverlay,isEnabled}: PromptSectionProps) {
   return (
-  <CNet onSendMessage={onSendMessage} onToggleOverlay={onToggleOverlay} />  
+  <CNet onSendMessage={onSendMessage} onToggleOverlay={onToggleOverlay} isEnabled = {isEnabled} />  
 );
 }

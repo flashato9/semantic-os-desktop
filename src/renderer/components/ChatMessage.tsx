@@ -40,13 +40,13 @@ if (message.sender == Sender.AI) {
         </p>
         
         <div className="chat-action-buttons-group">
-          <button className="chat-icon-btn" type="button">
+          {/* <button className="chat-icon-btn" type="button">
             <ThumbsUpIcon />
           </button>
           
           <button className="chat-icon-btn" type="button">
             <ThumbsDownIcon />
-          </button>
+          </button> */}
           
           <button className="chat-icon-btn" type="button">
             <CopyMessageIcon/>
