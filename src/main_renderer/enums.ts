@@ -8,7 +8,9 @@ export enum MethodName{
     isLangGraphProcessRunning = "isLangGraphProcessRunning",
     initializeGraphProcess = "initializeGraphProcess",
     terminateGraphProcess = "terminateGraphProcess",
-    getChatHistory = "getChatHistory"
+    getChatHistory = "getChatHistory",
+    getFileNodeChildren = "getFileNodeChildren",
+    getFileNode = "getFileNode"
 }
 
 export enum Sender{

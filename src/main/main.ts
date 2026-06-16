@@ -18,7 +18,10 @@ import {MessageData, AIMessageData} from "../main_renderer/classes"
 import { Channel, MethodName, Sender } from '../main_renderer/enums';
 import { spawn,exec } from 'child_process';
 import fs from 'fs';
+import fsp from 'fs/promises';
 import { promisify } from 'util';
+import { FileNode } from '../renderer/components/sampleData';
+
 
 
 
@@ -77,6 +80,19 @@ ipcMain.handle(MethodName.getChatHistory, async(_, ...args) =>{
     return result;
 })
 
+ipcMain.handle(MethodName.getFileNode, async(_, ...args) =>{
+    console.log("Request Received from renderer: getFileNode => Processing Request...")
+    const filePath= args[0];
+    const result:FileNode = await getFileNode(filePath);
+    return result;
+})
+
+ipcMain.handle(MethodName.getFileNodeChildren, async(_, ...args) =>{
+    console.log("Request Received from renderer: getFileNodeChildren => Processing Request...")
+    const filePath = args[0];
+    const result:FileNode[] = await getFileNodeChildren(filePath);
+    return result;
+})
 
 
 //Here we are defining an interface on the ipcMain. This means the front end can call this method ipc-example (i.e., via the preloader), and it will run the anonymous function here.
@@ -567,3 +583,30 @@ export async function getChatHistory(assistantId: string, threadId: string): Pro
     return [];
   }
 }
+
+async function getFileNode(filePath: string): Promise<FileNode> {
+  // 1. Get filesystem metadata stats from disk
+  const stats = await fsp.stat(filePath);
+  
+  // 2. Extract the file/folder name and normalize the path separators
+  const baseName = path.basename(filePath);
+  const normalizedFullPath = filePath.replace(/\\/g, '/');
+
+  // 3. Assemble and return the simplified object structure
+  return {
+    name: baseName,
+    isFolder: stats.isDirectory(),
+    fullPath: normalizedFullPath
+  };
+}
+async function getFileNodeChildren(filePath: string): Promise<FileNode[]> {
+  const itemNames = await fsp.readdir(filePath);
+
+  const nodePromises = itemNames.map(async (itemName) => {
+    const childAbsolutePath = path.join(filePath, itemName);
+    return await getFileNode(childAbsolutePath);
+  });
+
+  return await Promise.all(nodePromises);
+}
+
