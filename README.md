@@ -34,5 +34,5 @@ This project was bootstrapped and built upon the incredible foundation of
 * **[LangUI](https://www.langui.dev/)** - For providing the tailwind-crafted layout components specifically designed for AI and LLM applications. 
 * **[Tailwind CSS (v4)](https://tailwindcss.com/)** - Utilizing their modern, engine-driven utility framework for layout aesthetics.
 * **[SVG Repo](https://www.svgrepo.com/)** - Utilizing their sleek SVGs for icons
-
+* **[Headless-Tree](https://headless-tree.lukasbach.com//)** - Utilizing their file directory library. The documentation is so easy to understand!
 I appreciate their commitment to open-source software, which dramatically cut down my infrastructure setup time, allowing me to focus directly on building application features!
