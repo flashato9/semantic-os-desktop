@@ -5,6 +5,8 @@ import { useTree } from "@headless-tree/react";
 import cn from "classnames";
 import { FileNode } from './sampleData';
 import { MethodName } from '../../main_renderer/enums';
+import RootDirectory from './RootDirectory';
+import "./FileExplorer.css"
 
 interface FileExplorerState {
   directoryItems: FileNode[],
@@ -54,26 +56,11 @@ function CNet({rootNode}: FileExplorerProps) {
   )
   const tree = directoryTree;
   return (
-    <div {...tree.getContainerProps()} className="tree">
-      {tree.getItems().map((item) => (
-        <button
-          {...item.getProps()}
-          key={item.getId()}
-          style={{ paddingLeft: `${item.getItemMeta().level * 20}px` }}
-        >
-          <div
-            className={cn("treeitem", {
-              focused: item.isFocused(),
-              expanded: item.isExpanded(),
-              selected: item.isSelected(),
-              folder: item.isFolder(),
-            })}
-          >
-            {item.getItemName()}
-          </div>
-        </button>
-      ))}
+    <div className='file-explorer'>
+        <RootDirectory tree={tree}/>
     </div>
+        
+    
   );
 }
 

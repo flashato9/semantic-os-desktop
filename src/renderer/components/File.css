@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* 1. Base Structure & Dark Grey Text */
+.tree-row {
+  @apply w-full flex items-center gap-2 py-1.5 text-left border border-transparent 
+         transition-all duration-150 rounded cursor-pointer text-sm outline-none font-medium
+         text-slate-600;
+}
+
+/* 2. Light Color Hover Effect */
+.tree-row:hover {
+  @apply bg-slate-100 text-slate-800; /* 🌟 Light background, crisp dark text on hover */
+}
+
+/* 3. Selected State (Bit darker/more prominent than hover) */
+.tree-row.selected {
+  @apply bg-slate-200 text-slate-900 font-semibold shadow-sm; /* 🌟 Darker background than hover */
+}
+
+/* Keep look stable when hovering over a row that is already selected */
+.tree-row.selected:hover {
+  @apply bg-slate-200 text-slate-900;
+}
+
+/* 4. Keyboard Navigation Focus State */
+.tree-row.focused:not(.selected) {
+  @apply border-slate-300;
+}
+
+/* 5. Folder Distinction State (When expanded) */
+.tree-row.is-folder {
+  @apply text-slate-700; /* Base folder color slightly punchier than single files */
+}
+
+
+/* 6. File/Folder Icon Bracket Layout */
+.tree-icon-frame {
+  @apply w-4 h-4 flex items-center justify-center shrink-0 text-base select-none;
+}
+
+/* 7. Extra-long text overflow truncation layer */
+.tree-text {
+  @apply truncate tracking-wide pr-2;
+}
