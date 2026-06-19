@@ -1,11 +1,11 @@
 import './ChatView.css';
-import { TreeInstance } from "@headless-tree/core";
+import { ItemInstance, TreeInstance } from "@headless-tree/core";
 import { FileNode } from './sampleData';
 import File from "./File"
-import "./RootDirectory.css"
+import "./DirectoryView.css"
 
 interface RootDirectoryProps{
-  tree:TreeInstance<FileNode>;
+  tree:TreeInstance<FileNode>
 }
 
 function CNet({tree}: RootDirectoryProps) {
@@ -22,6 +22,6 @@ function CNet({tree}: RootDirectoryProps) {
   );
 }
 
-export default function RootDirectory({tree}: RootDirectoryProps) {
+export default function DirectoryView({tree}: RootDirectoryProps) {
   return <CNet tree = {tree}/>;
 }

@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import './ChatView.css';
-import { asyncDataLoaderFeature, hotkeysCoreFeature, selectionFeature, syncDataLoaderFeature, TreeInstance } from "@headless-tree/core";
+import { asyncDataLoaderFeature, hotkeysCoreFeature, ItemInstance, selectionFeature, syncDataLoaderFeature, TreeInstance } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
 import cn from "classnames";
 import { FileNode } from './sampleData';
 import { MethodName } from '../../main_renderer/enums';
-import RootDirectory from './RootDirectory';
+import DirectoryView from './DirectoryView';
 import "./FileExplorer.css"
+import { FileView } from './FileView';
 
 interface FileExplorerState {
-  directoryItems: FileNode[],
+  directoryItems: FileNode[]
 }
 interface FileExplorerProps{
   rootNode:FileNode;
@@ -34,9 +35,14 @@ function CNet({rootNode}: FileExplorerProps) {
   const [fileExplorerState,setFileExplorerState] = useState<FileExplorerState>({
     directoryItems: []
   })
-  const [directoryTree, setDirectoryTree] = useState<TreeInstance<FileNode>>(
-    useTree<FileNode>({
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const directoryTree = useTree<FileNode>({
       rootItemId: rootNode.fullPath,
+      state:{
+        selectedItems
+      },
+      setSelectedItems:setSelectedItems,
       getItemName: (item) => item.getItemData().name,
       isItemFolder: (item) => Boolean(item.getItemData().isFolder),
       createLoadingItemData: () => {
@@ -53,14 +59,41 @@ function CNet({rootNode}: FileExplorerProps) {
       indent: 20,
       features: [asyncDataLoaderFeature, selectionFeature, hotkeysCoreFeature],
     })
-  )
+  function isFileSelected(selectedItems:string[]):boolean {
+    if (selectedItems.length == 0){
+      return false;
+    }
+    if (selectedItems.length > 1 ){
+      return false;
+    }
+    const selectedItem = directoryTree.getItemInstance(selectedItems[0]).getItemData() ;
+    if (selectedItem.isFolder){
+      return false;
+    }
+    return true;
+  }
+  function getSelectedItem(selectedItems:string[]):ItemInstance<FileNode>{
+    const selectedItem = directoryTree.getItemInstance(selectedItems[0]);
+    return selectedItem;
+  }
+  
   const tree = directoryTree;
   return (
-    <div className='file-explorer'>
-        <RootDirectory tree={tree}/>
-    </div>
-        
+  <div className="workspace-split-container">
     
+    {/* 1. Left Hand Side: Navigation Tree Panel */}
+    <div className="directory-panel-wrapper">
+      <DirectoryView tree={tree} />
+    </div>
+
+    {/* 2. Right Hand Side: Code Content Viewer Panel */}
+    {isFileSelected(selectedItems) && (
+      <div className="file-viewer-wrapper">
+        <FileView fileMetadata={getSelectedItem(selectedItems)} />
+      </div>
+    )}
+
+  </div>
   );
 }
 

@@ -9,14 +9,6 @@ interface FileProps{
 }
 
 function CNet({metadata}: FileProps) {
-  if(metadata.getItemName() == ".erb"){
-    console.log({
-    isFolder:metadata.isFolder(),
-    isSelected:metadata.isSelected(),
-    isExpanded:metadata.isExpanded(),
-    itemName:metadata.getItemName()
-  })
-  }
   const level = metadata.getItemMeta().level;
   return (
     <button

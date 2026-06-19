@@ -94,6 +94,13 @@ ipcMain.handle(MethodName.getFileNodeChildren, async(_, ...args) =>{
     return result;
 })
 
+ipcMain.handle(MethodName.getFileContent, async(_, ...args) =>{
+    console.log("Request Received from renderer: getFileContent => Processing Request...")
+    const filePath = args[0];
+    const result:string = await getFileContent(filePath);
+    return result;
+})
+
 
 //Here we are defining an interface on the ipcMain. This means the front end can call this method ipc-example (i.e., via the preloader), and it will run the anonymous function here.
 //when this anon funciton urns, it will reply to the enet with "IPC test: pong" and log the user's event to the terminal. 
@@ -608,5 +615,14 @@ async function getFileNodeChildren(filePath: string): Promise<FileNode[]> {
   });
 
   return await Promise.all(nodePromises);
+}
+
+async function getFileContent(filePath: string): Promise<string> {
+  try {
+    return await fsp.readFile(filePath, 'utf-8');
+  } catch (error) {
+    console.error(`Failed to read file at ${filePath}:`, error);
+    throw error;
+  }
 }
 

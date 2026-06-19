@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/* The container wrapping both <FileView /> and <DirectoryView /> */
+.workspace-split-container {
+  /* 🌟 THE FIX: Forces children to sit side by side horizontally */
+  @apply w-full h-screen flex flex-row items-stretch overflow-hidden bg-slate-100;
+}
+
+/* Sidebar / Directory Navigation panel layout rules */
+.directory-panel-wrapper {
+  /* Locks the sidebar to a clean, fixed width so it doesn't distort */
+  @apply w-64 min-w-64 max-w-64 h-full  ;
+}
+
+/* File content viewer panel layout rules */
+.file-viewer-wrapper {
+  /* 🌟 THE FIX: Instructs the code viewer panel to greedily fill all remaining screen width */
+  @apply flex-grow h-full min-w-0 bg-slate-900 overflow-auto;
+}

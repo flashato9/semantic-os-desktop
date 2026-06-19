@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Container Shell */
+.file-viewer-container {
+  @apply flex flex-col w-full h-full;
+  background-color: #fafafa; /* Soft off-white */
+}
+
+/* Subtle Header Top Bar */
+.editor-header {
+  @apply px-6 py-2 text-xs font-semibold tracking-wider uppercase border-b border-slate-200/60 select-none;
+  color: #94a3b8; /* Muted grey header label text */
+  background-color: #f4f4f5; /* Light grey header panel backgrounds */
+}
+
+/* Scrollable Container Body */
+.editor-body {
+  @apply flex-grow overflow-auto p-6;
+}
+
+/* 🌟 THE TEXT STYLING FOR THE CONTENT */
+.editor-content {
+  margin: 0;
+  /* Soft, clean monospace font stack */
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  
+  /* 🌟 THE SOFT GREY COLOR */
+  color: #4b5563; /* Zinc-600 soft neutral grey */
+  
+  /* Layout Safety Guardrails */
+  white-space: pre-wrap;       /* 🌟 Crucial: Forces long lines to wrap downward instead of going off screen horizontally */
+  word-wrap: break-word;       
+  tab-size: 4;                 /* Standard elegant indent sizing */
+}

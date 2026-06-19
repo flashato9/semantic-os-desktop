@@ -10,7 +10,8 @@ export enum MethodName{
     terminateGraphProcess = "terminateGraphProcess",
     getChatHistory = "getChatHistory",
     getFileNodeChildren = "getFileNodeChildren",
-    getFileNode = "getFileNode"
+    getFileNode = "getFileNode",
+    getFileContent = "getFileContent"
 }
 
 export enum Sender{
