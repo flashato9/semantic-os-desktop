@@ -5,6 +5,7 @@ import './App.css';
 import ChatView from './components/ChatView';
 import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
 import FileExplorer from './components/FileExplorer';
+import EntryPage from './components/EntryPage';
 import path from 'path'
 import { FileNode } from './components/sampleData';
 
@@ -26,7 +27,8 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<CNet />} />
+        <Route path="/" element={<EntryPage />} />
+        <Route path="/main" element={<CNet />} />
       </Routes>
     </Router>
   );

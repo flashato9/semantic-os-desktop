@@ -3,7 +3,7 @@
 /* The container wrapping both <FileView /> and <DirectoryView /> */
 .workspace-split-container {
   /* 🌟 THE FIX: Forces children to sit side by side horizontally */
-  @apply w-full h-screen flex flex-row items-stretch overflow-hidden bg-slate-100;
+  @apply h-screen flex flex-row items-stretch overflow-hidden bg-slate-100;
 }
 
 /* Sidebar / Directory Navigation panel layout rules */

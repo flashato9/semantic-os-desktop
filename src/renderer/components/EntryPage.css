@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&display=swap');
+
+.entry-page {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #2c1810 0%, #4a2f23 25%, #5d4037 50%, #6b4d45 75%, #5d4037 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.entry-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  max-width: 600px;
+  width: 90%;
+  padding: 50px 40px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 128, 0.3);
+}
+
+.greeting {
+  font-size: 3rem;
+  font-weight: 600;
+  color: #d4af80;
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.5px;
+  font-family: 'Crimson Text', serif;
+}
+
+.search-form {
+  width: 100%;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 15px;
+  padding: 16px 24px;
+  box-shadow: 0 0 30px rgba(212, 175, 128, 0.6), 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease;
+  gap: 12px;
+  border: 1px solid rgba(212, 175, 128, 0.2);
+}
+
+.input-wrapper:focus-within {
+  box-shadow: 0 0 40px rgba(212, 175, 128, 0.8), 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: #333;
+  background: transparent;
+  font-family: 'Crimson Text', serif;
+}
+
+.search-input::placeholder {
+  color: #bbb;
+}
+
+.plus-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #d4af80;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: inherit;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.plus-button:hover {
+  color: #e0c5a8;
+  text-shadow: 0 0 10px rgba(212, 175, 128, 0.6);
+}
+
+.plus-button:active {
+  color: #f0d9b8;
+  text-shadow: 0 0 15px rgba(212, 175, 128, 0.8);
+}
+
+@media (max-width: 600px) {
+  .entry-container {
+    gap: 2rem;
+  }
+
+  .greeting {
+    font-size: 2rem;
+  }
+
+  .input-wrapper {
+    padding: 10px 16px;
+  }
+}
