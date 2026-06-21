@@ -110,26 +110,38 @@ function CNet() {
     );
     initializeMessages(chatHistory);
   };
-  useEffect(() => {
-    window.electron?.ipcRenderer.on(
-      Channel.INCOMING_CHAT_MESSAGE,
-      (...result) => {
-        console.log('Response from Main -->', result[0]);
-      },
-    );
-
-    window.electron?.ipcRenderer.on(Channel.AI_CHAT_MESSAGES, (...args) => {
-      const input = args[0] as AIMessageData;
-      const result: AIMessageData = new AIMessageData(
-        input.message,
-        input.user_message_id,
-        input.id,
+  const setupChat = async () => {
+      window.electron?.ipcRenderer.on(
+        Channel.INCOMING_CHAT_MESSAGE,
+        (...result) => {
+          console.log('Response from Main -->', result[0]);
+        },
       );
-      console.log(`AI message has been received from Main -> ${result}`);
-      handleMessageReceived(result);
-    });
 
-    getChatHistoryAndUpdateUI(assistantId, threadId);
+      window.electron?.ipcRenderer.on(Channel.AI_CHAT_MESSAGES, (...args) => {
+        const input = args[0] as AIMessageData;
+        const result: AIMessageData = new AIMessageData(
+          input.message,
+          input.user_message_id,
+          input.id,
+        );
+        console.log(`AI message has been received from Main -> ${result}`);
+        handleMessageReceived(result);
+      });
+
+      // Load chat history first
+      await getChatHistoryAndUpdateUI(assistantId, threadId);
+
+      // Then check for initial message from EntryPage
+      const initialMessage = sessionStorage.getItem('initialMessage');
+      if (initialMessage) {
+        const message: MessageData = new MessageData('user', initialMessage);
+        handleMessageSend(message);
+        sessionStorage.removeItem('initialMessage');
+      }
+    };
+  useEffect(() => {
+      setupChat();
   }, []);
 
   return (

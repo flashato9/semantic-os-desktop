@@ -20,6 +20,10 @@ export default function EntryPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log(`Submitting: "${state.input}"`);
+    // Store the message to be sent when ChatView loads (only if not empty)
+    if (state.input.trim()) {
+      sessionStorage.setItem('initialMessage', state.input.trim());
+    }
     navigate('/main');
   };
 
