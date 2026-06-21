@@ -31,7 +31,16 @@ const configuration: webpack.Configuration = {
   module: require('./webpack.config.renderer.dev').default.module,
 
   entry: {
-    renderer: Object.keys(dependencies || {}),
+    renderer: Object.keys(dependencies || {}).filter(
+      (name) =>
+        // Exclude packages with native bindings that webpack cannot process
+        !name.includes('@tailwindcss/oxide') &&
+        !name.includes('@rolldown/binding') &&
+        !name.includes('vite') &&
+        !name.includes('esbuild') &&
+        // Exclude Tailwind packages since CSS is pre-compiled
+        !name.includes('tailwindcss')
+    ),
   },
 
   output: {

@@ -1,6 +1,7 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
+import './output.css';
 import './App.css';
 import ChatView from './components/ChatExplorer/ChatView';
 import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';

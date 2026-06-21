@@ -21,3 +21,23 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Scrollbar styling for Chrome, Safari, Edge */
+.chat-scroller-viewport::-webkit-scrollbar {
+  width: 20px;
+}
+
+.chat-scroller-viewport::-webkit-scrollbar-track {
+  background: rgba(45, 24, 16, 0.3);
+  border-radius: 10px;
+}
+
+.chat-scroller-viewport::-webkit-scrollbar-thumb {
+  background: #d4af80;
+  border-radius: 10px;
+  border: 2px solid rgba(45, 24, 16, 0.3);
+}
+
+.chat-scroller-viewport::-webkit-scrollbar-thumb:hover {
+  background: #c99e6e;
+}
