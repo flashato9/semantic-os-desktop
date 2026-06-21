@@ -20,7 +20,7 @@ import { spawn,exec } from 'child_process';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import { promisify } from 'util';
-import { FileNode } from '../renderer/components/sampleData';
+import { FileNode } from "../main_renderer/interfaces";
 
 
 

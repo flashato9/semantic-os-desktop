@@ -1,8 +1,7 @@
-import './ChatView.css';
+import './DirectoryView.css';
 import { ItemInstance, TreeInstance } from "@headless-tree/core";
-import { FileNode } from './sampleData';
+import { FileNode } from "../../../main_renderer/interfaces";
 import File from "./File"
-import "./DirectoryView.css"
 
 interface RootDirectoryProps{
   tree:TreeInstance<FileNode>

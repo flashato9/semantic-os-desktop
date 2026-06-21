@@ -1,9 +1,9 @@
 import { useState, FormEvent, ChangeEvent, JSX, KeyboardEvent, useEffect, useRef } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import icon from '../../../../assets/icon.svg';
 import './PromptSection.css';
-import { MessageData } from '../../main_renderer/classes';
-import { SendIcon, MoreOptionsIcon } from "../../../assets/icons/PromptSection";
+import { MessageData } from '../../../main_renderer/classes';
+import { SendIcon, MoreOptionsIcon } from "../../../../assets/icons/PromptSection";
 interface PromptSectionProps {
   onSendMessage: (newMessage: MessageData) => void;
   onToggleOverlay: () => void;

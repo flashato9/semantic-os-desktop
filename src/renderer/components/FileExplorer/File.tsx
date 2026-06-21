@@ -1,8 +1,7 @@
-import './ChatView.css';
+import './File.css';
 import {ItemInstance} from "@headless-tree/core";
-import { FileNode } from './sampleData';
+import { FileNode } from "../../../main_renderer/interfaces";
 import cn from "classnames";
-import "./File.css"
 
 interface FileProps{
   metadata:ItemInstance<FileNode>

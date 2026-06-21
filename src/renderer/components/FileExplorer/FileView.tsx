@@ -1,7 +1,7 @@
 import './FileView.css';
-import { FileNode } from './sampleData';
+import { FileNode } from "../../../main_renderer/interfaces";
 import { ItemInstance } from '@headless-tree/core';
-import { MethodName } from '../../main_renderer/enums';
+import { MethodName } from '../../../main_renderer/enums';
 import { useEffect, useState } from 'react';
 
 interface FileViewProps {

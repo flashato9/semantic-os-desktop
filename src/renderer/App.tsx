@@ -2,12 +2,13 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
 import './App.css';
-import ChatView from './components/ChatView';
+import ChatView from './components/ChatExplorer/ChatView';
 import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
-import FileExplorer from './components/FileExplorer';
+import FileExplorer from './components/FileExplorer/FileExplorer';
 import EntryPage from './components/EntryPage';
+import MainPage from './components/MainPage';
 import path from 'path'
-import { FileNode } from './components/sampleData';
+import { FileNode } from "../main_renderer/interfaces";
 
 function CNet() {
   const rootNode:FileNode ={
@@ -17,8 +18,6 @@ function CNet() {
   } 
   return (
     <div>
-      {/* <ChatView/> */}
-      <FileExplorer rootNode={rootNode}/>
     </div>
   );
 }
@@ -28,7 +27,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<EntryPage />} />
-        <Route path="/main" element={<CNet />} />
+        <Route path="/main" element={<MainPage />} />
       </Routes>
     </Router>
   );

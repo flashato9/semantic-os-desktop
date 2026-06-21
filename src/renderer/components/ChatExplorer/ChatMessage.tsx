@@ -1,16 +1,16 @@
 import { JSX } from 'react';
-import humanAvatar from '../../../assets/chat/human.svg';
-import aiAvatar from '../../../assets/chat/nn.svg';
+import humanAvatar from '../../../../assets/chat/human.svg';
+import aiAvatar from '../../../../assets/chat/nn.svg';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './ChatMessage.css';
-import { MessageData } from '../../main_renderer/classes';
+import { MessageData } from '../../../main_renderer/classes';
 import {
   ThumbsUpIcon,
   ThumbsDownIcon,
   CopyMessageIcon,
-} from '../../../assets/icons/ChatMessage';
-import { Sender } from '../../main_renderer/enums';
+} from '../../../../assets/icons/ChatMessage';
+import { Sender } from '../../../main_renderer/enums';
 interface ChatMessageProps {
   message: MessageData;
 }

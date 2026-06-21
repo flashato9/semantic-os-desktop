@@ -1,0 +1,23 @@
+.chat-view-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.chat-overlay-anchor {
+  position: absolute;
+  bottom: 64px;
+  left: 8px;
+  z-index: 50;
+}
+
+.chat-scroller-viewport {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}

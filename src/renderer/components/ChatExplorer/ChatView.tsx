@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import './ChatView.css';
 import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
-import { MessageData, AIMessageData } from '../../main_renderer/classes';
+import { MessageData, AIMessageData } from '../../../main_renderer/classes';
 import AgentOverlay from './MoreOptionsOverlay';
-import { Channel, MethodName, Sender } from '../../main_renderer/enums';
+import { Channel, MethodName, Sender } from '../../../main_renderer/enums';
 
 interface ChatViewState {
   messages: MessageData[];

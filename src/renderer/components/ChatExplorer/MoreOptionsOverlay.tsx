@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './MoreOptionsOverlay.css';
-import { MethodName } from '../../main_renderer/enums';
+import { MethodName } from '../../../main_renderer/enums';
 
 enum AgentStatus{
     Connected = "Connected 🟢",

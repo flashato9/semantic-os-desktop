@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import './ChatView.css';
+import './FileExplorer.css';
 import { asyncDataLoaderFeature, hotkeysCoreFeature, ItemInstance, selectionFeature, syncDataLoaderFeature, TreeInstance } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
 import cn from "classnames";
-import { FileNode } from './sampleData';
-import { MethodName } from '../../main_renderer/enums';
+import { FileNode } from "../../../main_renderer/interfaces";
+import { MethodName } from '../../../main_renderer/enums';
 import DirectoryView from './DirectoryView';
-import "./FileExplorer.css"
 import { FileView } from './FileView';
 
 interface FileExplorerState {
