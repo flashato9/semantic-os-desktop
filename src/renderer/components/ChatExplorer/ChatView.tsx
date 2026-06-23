@@ -4,25 +4,31 @@ import ChatMessage from './ChatMessage';
 import PromptSection from './PromptSection';
 import { MessageData, AIMessageData } from '../../../main_renderer/classes';
 import AgentOverlay from './MoreOptionsOverlay';
-import { Channel, MethodName, Sender } from '../../../main_renderer/enums';
+import { Channel, Sender } from '../../../main_renderer/enums';
+import { getChatHistory, initiateGraphProcess, isGraphProcessRunning } from '../../functions/functions_to_main_process';
 
 interface ChatViewState {
   messages: MessageData[];
   isShowOverlay: boolean;
   isEnableChat: boolean;
+  isChatInitialized:boolean;
 }
-async function getChatHistory(
-  assistantId: string,
-  threadId: string,
-): Promise<MessageData[]> {
-  console.log('getting chat history.');
+function toggleOverlay(chatViewState:ChatViewState,setChatViewState:React.Dispatch<React.SetStateAction<ChatViewState>>){
+  setChatViewState((prev) => ({
+      ...prev,
+      isShowOverlay: !chatViewState.isShowOverlay,
+    }));
+}
+function scrollToBottom(reference: React.RefObject<HTMLDivElement | null>) {
+    reference.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-  const result: MessageData[] = await window.electron?.ipcRenderer.invoke(
-    MethodName.getChatHistory,
-    { assistantId: assistantId, threadId: threadId },
-  );
-  return result;
-}
+   function sendMessageToGraph (message: MessageData) {
+    window.electron?.ipcRenderer.sendMessage(
+      Channel.INCOMING_CHAT_MESSAGE,
+      message,
+    );
+  };
 
 function CNet() {
   const assistantId = '93f4c74d-b502-49b3-ac47-34f172a34886';
@@ -32,56 +38,35 @@ function CNet() {
     messages: [],
     isShowOverlay: false,
     isEnableChat: true,
+    isChatInitialized:false
   });
-
-  const toggleOverlay = () => {
-    setChatViewState({
-      ...chatViewState,
-      isShowOverlay: !chatViewState.isShowOverlay,
-    });
-  };
-
-  // 1. Create a reference anchor point for the bottom of the chat
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // 2. This function forces the page to scroll smoothly down to our anchor
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // 3. This effect automatically triggers EVERY time the `messages` array changes
+  
   useEffect(() => {
-    scrollToBottom();
+    scrollToBottom(messagesEndRef);
   }, [chatViewState]);
 
-  const sendMessageToGraph = (message: MessageData) => {
-    window.electron?.ipcRenderer.sendMessage(
-      Channel.INCOMING_CHAT_MESSAGE,
-      message,
-    );
-  };
+ 
   // 2. A central function to append new messages to our list
   const handleMessageSend = (newMessage: MessageData) => {
      const pendingMessage = new AIMessageData(
       '...PENDING RESPONSE',
       newMessage.id,
     );
-    setChatViewState((oldState) => {
-      return {
-        ...oldState,
-        messages: [...oldState.messages, newMessage, pendingMessage],
+    setChatViewState((prev) =>({
+        ...prev,
+        messages: [...prev.messages, newMessage, pendingMessage],
         isEnableChat: false,
-      };
-    });
+      }));
     sendMessageToGraph(newMessage);
   };
   const handleMessageReceived = (newMessage: AIMessageData) => {
-    setChatViewState((oldState) => {
-      const oldMessagesFiltered = oldState.messages.filter(
+    setChatViewState((prev) => {
+      const oldMessagesFiltered = prev.messages.filter(
         (elem) => elem.message != '...PENDING RESPONSE',
       );
       return {
-        ...oldState,
+        ...prev,
         messages: [...oldMessagesFiltered, newMessage],
          isEnableChat: true,
       };
@@ -93,12 +78,10 @@ function CNet() {
         (elem.message && elem.sender == Sender.AI) || elem.sender == Sender.USER
       );
     });
-    setChatViewState((oldState) => {
-      return {
-        ...oldState,
-        messages: [...messages],
-      };
-    });
+    setChatViewState((prev) => ({
+      ...prev,
+      messages: [...messages],
+    }));
   };
   const getChatHistoryAndUpdateUI = async (
     assistantId: string,
@@ -128,17 +111,23 @@ function CNet() {
         console.log(`AI message has been received from Main -> ${result}`);
         handleMessageReceived(result);
       });
-
-      // Load chat history first
+      const isGraphRunning = await isGraphProcessRunning();
+      if(!isGraphRunning){
+        await initiateGraphProcess();
+      }
       await getChatHistoryAndUpdateUI(assistantId, threadId);
-
-      // Then check for initial message from EntryPage
       const initialMessage = sessionStorage.getItem('initialMessage');
       if (initialMessage) {
         const message: MessageData = new MessageData('user', initialMessage);
         handleMessageSend(message);
         sessionStorage.removeItem('initialMessage');
       }
+      setChatViewState((prev)=>({
+        ...prev,
+        isChatInitialized: true
+      }))
+
+      
     };
   useEffect(() => {
       setupChat();
@@ -151,7 +140,11 @@ function CNet() {
           <AgentOverlay />
         </div>
       )}
-
+      {!chatViewState.isChatInitialized &&
+        <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>Loading Chat Messages...</p>
+      </div>}
       <div className="chat-scroller-viewport">
         {chatViewState.messages.map((msg, index) => (
           <ChatMessage key={index} message={msg} />
@@ -161,7 +154,7 @@ function CNet() {
 
       <PromptSection
         onSendMessage={handleMessageSend}
-        onToggleOverlay={toggleOverlay}
+        onToggleOverlay={() =>toggleOverlay(chatViewState,setChatViewState)}
         isEnabled={chatViewState.isEnableChat}
       />
     </div>

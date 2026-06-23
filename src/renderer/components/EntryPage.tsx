@@ -41,7 +41,7 @@ export default function EntryPage() {
         <h1 className="greeting">Semantic OS</h1>
         
         <form className="search-form" onSubmit={handleSubmit}>
-          <div className="input-wrapper">
+          <div className="input-wrapper">            
             <button
               className="plus-button"
               type="button"

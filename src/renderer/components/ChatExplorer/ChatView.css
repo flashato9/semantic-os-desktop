@@ -41,3 +41,51 @@
 .chat-scroller-viewport::-webkit-scrollbar-thumb:hover {
   background: #c99e6e;
 }
+
+
+/* Centered perfectly on screen, but completely see-through */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: transparent; /* ❌ No background color, entirely see-through */
+  z-index: 9999; /* Sits on top of the layout structure */
+  pointer-events: none; /* Prevents the invisible container from blocking clicks if needed */
+}
+
+/* The custom spinner matching your warm cream input border */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(245, 230, 211, 0.1); /* Very faint cream track */
+  border-top-color: #f5e6d3; /* Solid warm cream spinning head */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* The text styled to match "Semantic OS" */
+.loading-screen p {
+  margin-top: 14px;
+  font-family: 'Crimson Text', serif;
+  font-size: 1.25rem;
+  font-style: italic;
+  color: #f5e6d3; /* Matching warm cream font color */
+  letter-spacing: 0.02em;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.85; }
+}
