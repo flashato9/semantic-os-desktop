@@ -17,33 +17,6 @@
   overflow: hidden;
 }
 
-.back-to-entry-button {
-  background: none;
-  border: none;
-  padding: 16px;
-  cursor: pointer;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 100;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.back-to-entry-button img {
-  width: 24px;
-  height: 24px;
-  opacity: 0.8;
-  transition: opacity 0.2s ease;
-}
-
-.back-to-entry-button:hover img {
-  opacity: 1;
-}
-
-.back-to-entry-button:active {
-  transform: scale(0.95);
-}
-
 .main-page > div {
   flex: 1;
   overflow: auto;

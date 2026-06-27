@@ -18,6 +18,7 @@ import {MessageData, AIMessageData} from "../main_renderer/classes"
 import { Channel, MethodName, Sender } from '../main_renderer/enums';
 import { spawn,exec } from 'child_process';
 import fs from 'fs';
+import { spawnTerminal, writeTerminalInput, killTerminal, resizeTerminal } from './terminal';
 import fsp from 'fs/promises';
 import { promisify } from 'util';
 import { FileNode } from "../main_renderer/interfaces";
@@ -28,6 +29,7 @@ import { FileNode } from "../main_renderer/interfaces";
 class AppUpdater {
   constructor() { //this is how you create a constructor in TypeScript
     log.transports.file.level = 'info'; //I guess electron-log is a logger for electron apps. Here its saying set the log level to info
+    log.transports.console.level= "info";
     //electron-log is very special because when the user is running your app in prod, this logger will log errors and if the user has an issue the can export this log and you can analyze it
     autoUpdater.logger = log; //you can set a logger for the autoUpdater. Here its setting it to log. 
     //Rememeber the autoUpdater. This is the module that allows your prod app to check for new updates, people download it and install. When this module runs its writes some logs, here we are asking those logs to be pipes to this same logger
@@ -99,6 +101,36 @@ ipcMain.handle(MethodName.getFileContent, async(_, ...args) =>{
     const filePath = args[0];
     const result:string = await getFileContent(filePath);
     return result;
+})
+
+ipcMain.handle(MethodName.spawnTerminal, async(_, ...args) =>{
+    log.debug("IPC: spawnTerminal handler called");
+    log.debug("mainWindow is:", mainWindow);
+    const terminalId = spawnTerminal(mainWindow!);
+    log.debug("IPC: spawnTerminal returning:", terminalId);
+    return terminalId;
+})
+
+ipcMain.handle(MethodName.writeTerminalInput, async(_, ...args) =>{
+    log.debug("IPC: writeTerminalInput handler called with args:", args);
+    const { terminalId, input } = args[0];
+    writeTerminalInput(terminalId, input);
+    log.debug("IPC: writeTerminalInput complete");
+})
+
+ipcMain.handle(MethodName.killTerminal, async(_, ...args) =>{
+    log.debug("IPC: killTerminal handler called");
+    const terminalId = args[0];
+    killTerminal(terminalId);
+})
+
+ipcMain.handle(MethodName.resizeTerminal, async(_, ...args) =>{
+    log.debug("IPC: resizeTerminal handler called with args:", args);
+    const terminalId = args[0];
+    const cols = args[1];
+    const rows = args[2];
+    resizeTerminal(terminalId, cols, rows);
+    log.debug("IPC: resizeTerminal complete");
 })
 
 

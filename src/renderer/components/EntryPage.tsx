@@ -24,7 +24,7 @@ export default function EntryPage() {
     if (state.input.trim()) {
       sessionStorage.setItem('initialMessage', state.input.trim());
     }
-    navigate('/main');
+    navigate('/terminal');
   };
 
   const handleMoreOptions = () => {

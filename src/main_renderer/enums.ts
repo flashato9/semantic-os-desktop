@@ -1,7 +1,10 @@
 export enum Channel {
     INCOMING_CHAT_MESSAGE = 'incoming-chat-messages',
     RECEIVED_CHAT_MESSAGE = 'received-chat-messages',
-    AI_CHAT_MESSAGES = 'received-chat-messages'
+    AI_CHAT_MESSAGES = 'received-chat-messages',
+    TERMINAL_OUTPUT = 'terminal-output',
+    TERMINAL_ERROR = 'terminal-error',
+    TERMINAL_CLOSED = 'terminal-closed'
 } 
 
 export enum MethodName{
@@ -11,7 +14,11 @@ export enum MethodName{
     getChatHistory = "getChatHistory",
     getFileNodeChildren = "getFileNodeChildren",
     getFileNode = "getFileNode",
-    getFileContent = "getFileContent"
+    getFileContent = "getFileContent",
+    spawnTerminal = "spawnTerminal",
+    writeTerminalInput = "writeTerminalInput",
+    killTerminal = "killTerminal",
+    resizeTerminal = "resizeTerminal"
 }
 
 export enum Sender{
